@@ -8,12 +8,12 @@
 #define TABLE_SIZE 100
 
 // Book Struct
-typedef struct {
+typedef struct Book {
     int id;
     char title[50];
     int price;
-    int stockQuantity;  
-    int isbn;           
+    int stockQuantity;
+    int isbn;
     struct Book* next;
 } Book;
 
@@ -30,7 +30,8 @@ Book* searchBook(HashTable* hashTable, int id);
 Book* searchBookByISBN(HashTable* hashTable, int isbn);
 void deleteBook(HashTable* hashTable, int id);
 void deleteBookByISBN(HashTable* hashTable, int isbn);
-void freeHashTable(HashTable* hashTable);;
+void freeHashTable(HashTable* hashTable);
+void freeBooks(Book* book);
 void createBook(HashTable* hashTable);
 void readBookDetail(HashTable* hashTable);
 void readBookByID(HashTable* hashTable);
@@ -202,14 +203,16 @@ void deleteBookByISBN(HashTable* hashTable, int isbn) {
 
 void freeHashTable(HashTable* hashTable) {
     for (int i = 0; i < TABLE_SIZE; i++) {
-        Book* current = hashTable->table[i];
-        while (current) {
-            Book* temp = current;
-            current = current->next;
-            free(temp);
-        }
+        freeBooks(hashTable->table[i]);
     }
     free(hashTable);
+}
+
+void freeBooks(Book* book) {
+    if (book) {
+        freeBooks(book->next);
+        free(book);
+    }
 }
 
 // File Mgmt
@@ -308,7 +311,7 @@ void readBookByID(HashTable* hashTable) {
             book->id, book->title, book->price, book->stockQuantity, book->isbn);
     }
     else {
-        printf("No book found with ID %d.\n", id);
+        printf("Book with ID %d not found.\n", id);
     }
 }
 
@@ -320,179 +323,138 @@ void readBookByISBN(HashTable* hashTable) {
             book->id, book->title, book->price, book->stockQuantity, book->isbn);
     }
     else {
-        printf("No book found with ISBN %d.\n", isbn);
+        printf("Book with ISBN %d not found.\n", isbn);
     }
 }
 
 void readAllBooks(HashTable* hashTable) {
-    int found = 0;
     for (int i = 0; i < TABLE_SIZE; i++) {
         Book* current = hashTable->table[i];
         while (current) {
             printf("ID: %d, Title: %s, Price: %d, Stock Quantity: %d, ISBN: %d\n",
                 current->id, current->title, current->price, current->stockQuantity, current->isbn);
             current = current->next;
-            found = 1;
         }
-    }
-    if (!found) {
-        printf("No books in record.\n");
     }
 }
 
 void editBookDetail(HashTable* hashTable) {
-    int id = getValidatedIntegerInput("Enter book ID to update: ");
+    int id = getValidatedIntegerInput("Enter book ID to edit: ");
     Book* book = searchBook(hashTable, id);
-    if (!book) {
-        printf("Book with ID %d not found.\n", id);
-        return;
+    if (book) {
+        printf("Editing Book with ID: %d\n", id);
+        getValidatedStringInput("Enter new book title: ", book->title, sizeof(book->title));
+        book->price = getValidatedIntegerInput("Enter new book price: ");
+        book->stockQuantity = getValidatedIntegerInput("Enter new book stock quantity: ");
+        book->isbn = getValidatedIntegerInput("Enter new book ISBN: ");
+        printf("Book data updated successfully.\n");
     }
-
-    getValidatedStringInput("Enter new title: ", book->title, sizeof(book->title));
-    book->price = getValidatedIntegerInput("Enter new price: ");
-    book->stockQuantity = getValidatedIntegerInput("Enter new stock quantity: ");
-    book->isbn = getValidatedIntegerInput("Enter new ISBN: ");
-    printf("Book updated successfully.\n");
+    else {
+        printf("Book with ID %d not found.\n", id);
+    }
 }
 
 void deleteBookById(HashTable* hashTable) {
     int id = getValidatedIntegerInput("Enter book ID to delete: ");
     deleteBook(hashTable, id);
-    printf("Book deleted successfully.\n");
+    printf("Book with ID %d deleted successfully.\n", id);
 }
 
 void deleteBookByISBNOption(HashTable* hashTable) {
     int isbn = getValidatedIntegerInput("Enter book ISBN to delete: ");
     deleteBookByISBN(hashTable, isbn);
-    printf("Book deleted successfully.\n");
+    printf("Book with ISBN %d deleted successfully.\n", isbn);
 }
 
-// FILTER - feature
 void filterBookRecords(HashTable* hashTable) {
-    int userChoice;
-    printf("Filter book records by:\n");
-    printf("1. Price Range\n");
-    printf("2. Stock Quantity Range\n");
-    printf("Enter your choice: ");
-    userChoice = getValidatedIntegerInput("");
+    int minPrice = getValidatedIntegerInput("Enter minimum price: ");
+    int maxPrice = getValidatedIntegerInput("Enter maximum price: ");
+    int minStock = getValidatedIntegerInput("Enter minimum stock quantity: ");
+    int maxStock = getValidatedIntegerInput("Enter maximum stock quantity: ");
 
-    switch (userChoice) {
-    case 1:
-    {
-        int minPrice = getValidatedIntegerInput("Enter minimum price: ");
-        int maxPrice = getValidatedIntegerInput("Enter maximum price: ");
-        printf("Books with price between %d and %d:\n", minPrice, maxPrice);
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            Book* current = hashTable->table[i];
-            while (current) {
-                if (current->price >= minPrice && current->price <= maxPrice) {
-                    printf("ID: %d, Title: %s, Price: %d, Stock Quantity: %d, ISBN: %d\n",
-                        current->id, current->title, current->price, current->stockQuantity, current->isbn);
-                }
-                current = current->next;
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        Book* current = hashTable->table[i];
+        while (current) {
+            if (current->price >= minPrice && current->price <= maxPrice &&
+                current->stockQuantity >= minStock && current->stockQuantity <= maxStock) {
+                printf("ID: %d, Title: %s, Price: %d, Stock Quantity: %d, ISBN: %d\n",
+                    current->id, current->title, current->price, current->stockQuantity, current->isbn);
             }
+            current = current->next;
         }
-    }
-    break;
-    case 2:
-    {
-        int minStock = getValidatedIntegerInput("Enter minimum stock quantity: ");
-        int maxStock = getValidatedIntegerInput("Enter maximum stock quantity: ");
-        printf("Books with stock quantity between %d and %d:\n", minStock, maxStock);
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            Book* current = hashTable->table[i];
-            while (current) {
-                if (current->stockQuantity >= minStock && current->stockQuantity <= maxStock) {
-                    printf("ID: %d, Title: %s, Price: %d, Stock Quantity: %d, ISBN: %d\n",
-                        current->id, current->title, current->price, current->stockQuantity, current->isbn);
-                }
-                current = current->next;
-            }
-        }
-    }
-    break;
-    default:
-        printf("Invalid choice. Please try again.\n");
-        break;
     }
 }
 
 void showBookStatistics(HashTable* hashTable) {
     int uniqueBooks = 0;
     int totalBooks = 0;
-    int mostExpensive = 0;
-    int leastExpensive = INT_MAX;
+    int mostExpensive = -1;
+    int leastExpensive = -1;
+
     for (int i = 0; i < TABLE_SIZE; i++) {
         Book* current = hashTable->table[i];
         while (current) {
-            totalBooks++;
-            if (current->price > mostExpensive) {
+            uniqueBooks++;
+            totalBooks += current->stockQuantity;
+            if (mostExpensive == -1 || current->price > mostExpensive) {
                 mostExpensive = current->price;
             }
-            if (current->price < leastExpensive) {
+            if (leastExpensive == -1 || current->price < leastExpensive) {
                 leastExpensive = current->price;
             }
             current = current->next;
-            uniqueBooks++;
         }
     }
 
-    if (leastExpensive == INT_MAX) {
-        leastExpensive = 0;
-    }
-
     printf("Total unique books: %d\n", uniqueBooks);
-    printf("Total number of books: %d\n", totalBooks);
+    printf("Total books: %d\n", totalBooks);
     printf("Most expensive book price: %d\n", mostExpensive);
     printf("Least expensive book price: %d\n", leastExpensive);
 }
 
-// Input validations
-int getValidatedIntegerInput(const char* prompt) {
-    int value;
-    char buffer[10];
-    while (1) {
-        printf("%s", prompt);
-        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-            if (sscanf(buffer, "%d", &value) == 1) {
-                break;
-            }
-        }
-        printf("Invalid input. Please enter a valid integer.\n");
-    }
-    return value;
-}
-
-void getValidatedStringInput(const char* prompt, char* buffer, int bufferSize) {
-    printf("%s", prompt);
-    if (fgets(buffer, bufferSize, stdin) != NULL) {
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n') {
-            buffer[len - 1] = '\0';  // Remove the newline character
-        }
-    }
-}
-
-// Menu Interface
+// Menu
 void printMenu() {
     printf("|----------------------------------------------------------|\n");
     printf("| Book Management System                                   |\n");
     printf("|----------------------------------------------------------|\n");
-    printf("| 1. Add a new Book                                        |\n");
+    printf("| 1. Add a new Book record                                 |\n");
     printf("| 2. Retrieve book records                                 |\n");
     printf("|    1. Retrieve by ID                                     |\n");
     printf("|    2. Retrieve by ISBN                                   |\n");
     printf("|    3. Retrieve all records                               |\n");
     printf("| 3. Update book detail                                    |\n");
-    printf("| 4. Delete a Book                                         |\n");
-    printf("|    1. Delete by ID                                       |\n");
-    printf("|    2. Delete by ISBN                                     |\n");
+    printf("| 4. Delete a Book record                                  |\n");
     printf("| 5. Filter book records                                   |\n");
-    printf("|    1. Price Range                                        |\n");
-    printf("|    2. Stock Quantity Range                               |\n");
-    printf("| 6. Book Statistics                                       |\n");
+    printf("| 6. Display Book Statistics                               |\n");
     printf("|----------------------------------------------------------|\n");
     printf("|                                   | (0) Save and Exit    |\n");
     printf("|----------------------------------------------------------|\n");
 }
 
+// Validation for Integer input
+int getValidatedIntegerInput(const char* prompt) {
+    int input;
+    while (1) {
+        printf("%s", prompt);
+        if (scanf("%d", &input) == 1) {
+            while (getchar() != '\n'); // clear input buffer
+            return input;
+        }
+        else {
+            printf("Invalid input. Please enter a valid integer.\n");
+            while (getchar() != '\n'); // clear input buffer
+        }
+    }
+}
+
+// Validation for String input
+void getValidatedStringInput(const char* prompt, char* buffer, int bufferSize) {
+    printf("%s", prompt);
+    fgets(buffer, bufferSize, stdin);
+
+    // Remove the newline character from the end of the input if present
+    size_t length = strlen(buffer);
+    if (length > 0 && buffer[length - 1] == '\n') {
+        buffer[length - 1] = '\0';
+    }
+}
