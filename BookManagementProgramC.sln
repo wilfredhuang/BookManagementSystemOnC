@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BookManagementProgramC", "BookManagementProgramC.vcxproj", "{C0AC370D-6777-4A91-BB5B-A96BE26E712A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Debug|x64.ActiveCfg = Debug|x64
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Debug|x64.Build.0 = Debug|x64
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Debug|x86.ActiveCfg = Debug|Win32
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Debug|x86.Build.0 = Debug|Win32
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Release|x64.ActiveCfg = Release|x64
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Release|x64.Build.0 = Release|x64
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Release|x86.ActiveCfg = Release|Win32
+		{C0AC370D-6777-4A91-BB5B-A96BE26E712A}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7868E625-96B5-4866-90DA-94FFB25197A3}
+	EndGlobalSection
+EndGlobal
